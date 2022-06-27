@@ -1,0 +1,62 @@
+#ifndef DEFINITIONS_H
+#define DEFINITIONS_H
+
+//SERIAL-MONITOR
+#ifndef BAUD_RATE
+#define BAUD_RATE 115200
+#endif
+
+//DEBUG
+#if DEBUG_SENSORS_PRINT
+#define SENSORS_DEBUG 1
+#else
+#define SENSORS_DEBUG 0
+#endif
+#if DEBUG_PIR_SKIP_INIT
+#define PIR_SKIP_INIT 1
+#else
+#define PIR_SKIP_INIT 0
+#endif
+
+//RUNTIME SETTINGS
+#ifndef SECURITY_TIMEOUT
+#define SECURITY_TIMEOUT 10000
+#endif
+
+//SENSORS
+#ifndef SENSOR_LIGHT_TRIGGER
+#define SENSOR_LIGHT_TRIGGER 5
+#endif
+#ifndef SENSOR_DISTANCE_TRIGGER
+#define SENSOR_DISTANCE_TRIGGER 10
+#endif
+#ifndef SENSOR_MOTION_TIMEOUT
+#define SENSOR_MOTION_TIMEOUT 30000
+#endif
+
+//CONNECTIONS
+#define WIFI_SSID_LENGHT 32
+#define WIFI_PASS_LENGHT 63
+#define BT_MSG_LED 1
+#define BT_MSG_WIFI_SSID 2
+#define BT_MSG_WIFI_PASS 3
+
+
+//LED
+#ifndef LED_TIMEOUT
+#define LED_TIMEOUT 5000
+#endif
+#ifndef LED_FADE_DELAY
+#define LED_FADE_DELAY 20
+#endif
+#ifndef LED_FADE_AMOUNT
+#define LED_FADE_AMOUNT 5
+#endif
+#ifndef LED_MAX_BRIGHTNESS
+#define LED_MAX_BRIGHTNESS 125
+#endif
+#ifndef LED_MIN_BRIGHTNESS
+#define LED_MIN_BRIGHTNESS 0
+#endif
+
+#endif
