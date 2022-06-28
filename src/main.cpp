@@ -10,6 +10,7 @@
 #include "Smoothing.hpp"
 #include "StateTimer.hpp"
 #include "WiFiHandler.hpp"
+#include "TouchTrigger.hpp"
 
 BluetoothSerial SerialBT;
 WiFiHandler wifiHandler;
@@ -43,51 +44,38 @@ void setup () {
 }
 
 void manualLightControl() {
-  // if (led.autoStatus() && manual.timeOut()) {
-  //   manual.setDelay(MANUAL_TIMEOUT);
-  //   manual.timerUpdate();
-  //   manual.setState(false);
-  //   led.fadeOut();
-  //   return;
-  // }
-
   if (!manual.status())
     led.fadeIn();
   else
     led.fadeOut();
-
   manual.switchState();
 }
 
-
-void sensors() {
+void touch() {
   static StateTimer touch(500);
-  static Smoothing
-    lightData(0, SENSOR_LIGHT_TRIGGER),
-    distanceData(0, SENSOR_DISTANCE_TRIGGER),
-    touchData(0, 20);
-
-  lightData.addData(lightSensor.readLightLevel());
-  distanceData.addData(distanceSensor.measureDistanceCm());
+  static Smoothing<touch_value_t> touchData(0, 20, 10);
   touchData.addData(touchRead(13));
 
-  static byte indexData = 0;
-  if (indexData < 9) {
-    ++indexData;
+  if (touchData.getIndex() < 9)
     return;
-  }
-
-  indexData = 0;
-  motionSensor.update();
 
   if (touchData.isInRange() && touch.timeOut()) {
     manualLightControl();
     touch.timerUpdate();
   }
+}
 
-  // if (!manual.timeOut())
-  //   return;
+void sensors() {
+  static Smoothing<float> lightData(0, SENSOR_LIGHT_TRIGGER, 10);
+  static Smoothing<float> distanceData(0, SENSOR_DISTANCE_TRIGGER, 10);
 
+  lightData.addData(lightSensor.readLightLevel());
+  distanceData.addData(distanceSensor.measureDistanceCm());
+
+  if (lightData.getIndex() < 9)
+    return;
+
+  motionSensor.update();
   if (lightData.isInRange()
       && motionSensor.status()
       && distanceData.isInRange())
@@ -100,6 +88,8 @@ void sensors() {
     Serial.print(distance); Serial.print(" cm");
     Serial.print(" | ");
     Serial.print(lux); Serial.print(" lx");
+    Serial.print(" | ");
+    Serial.print("motion "); Serial.print(motionSensor.status());
     Serial.println();
   }
 }
@@ -130,6 +120,7 @@ void bluetoothHandler() {
 }
 
 void loop () {
+  touch();
   sensors();
   bluetoothHandler();
   wifiHandler.run();

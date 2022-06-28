@@ -1,42 +1,51 @@
+#ifndef SMOOTHING_HPP
+#define SMOOTHING_HPP
+
 #include <Arduino.h>
 
+template <class Data>
 class Smoothing {
   private:
     byte  _index;
-    byte  _limits[2];
-    float _readings[10];
+    byte  _indexSize;
+    int   _limits[2];
+    Data* _readings;
   public:
-    Smoothing(byte const min, byte const max);
-    ~Smoothing();
-    void addData(float const data);
-    float getAverage() const;
-    bool isInRange() const;
+    Smoothing(int const minRange, int const maxRange, byte const indexCount) {
+      this->_index = 0;
+      this->_indexSize = indexCount;
+      this->_limits[0] = minRange;
+      this->_limits[1] = maxRange;
+      this->_readings = new Data[indexCount];
+      bzero(this->_readings, sizeof(*this->_readings) * indexCount);
+    }
+
+    ~Smoothing() {
+      delete [] this->_readings;
+    }
+
+    void addData(Data const data) {
+      if (this->_index > (this->_indexSize - 1))
+        this->_index = 0;
+      this->_readings[this->_index] = data;
+      ++this->_index;
+    }
+
+    Data getAverage() const {
+      Data total = 0;
+      for (byte i = 0; i <= this->_index; i++)
+        total += this->_readings[i];
+      return (total / (this->_index + 1));
+    }
+
+    bool isInRange() const {
+      Data data = this->getAverage();
+      return (data >= this->_limits[0] && data <= this->_limits[1]);
+    }
+
+    byte getIndex() const {
+      return this->_index;
+    }
 };
 
-Smoothing::Smoothing(byte const minRange, byte const maxRange) {
-  this->_index = 0;
-  this->_limits[0] = minRange;
-  this->_limits[1] = maxRange;
-  bzero(this->_readings, sizeof(*this->_readings) * 10);
-}
-
-Smoothing::~Smoothing() {}
-
-void Smoothing::addData(float const data) {
-  if (this->_index > 9)
-    this->_index = 0;
-  this->_readings[this->_index] = data;
-  this->_index++;
-}
-
-float Smoothing::getAverage() const {
-  float total = 0;
-  for (byte i = 0; i <= this->_index; i++)
-    total += this->_readings[i];
-  return (total / (this->_index + 1));
-}
-
-bool Smoothing::isInRange() const {
-  float data = this->getAverage();
-  return (data >= this->_limits[0] && data <= this->_limits[1]);
-}
+#endif

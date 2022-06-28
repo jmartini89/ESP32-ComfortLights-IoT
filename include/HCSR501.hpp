@@ -19,8 +19,18 @@ class PIR {
   public:
     PIR(byte const pin);
     ~PIR();
+    /**
+     * New sensor read if current state is LOW and TIMEOUT expired
+     * Updates internal state and timer
+     */
     void update();
+    /**
+     * Resets internal state and timer
+     */
     void reset();
+    /**
+     * Gets internal state
+     */
     bool status() const;
 };
 
@@ -33,10 +43,6 @@ PIR::PIR(byte const pin)
 
 PIR::~PIR() {}
 
-/**
- * New sensor read if current state is LOW and TIMEOUT expired
- * Updates internal state and timer
- */
 void PIR::update() {
   if (!this->_state.status()) {
     this->_state.setState(digitalRead(this->_pin));
@@ -47,17 +53,11 @@ void PIR::update() {
     this->_state.setState(false);
 }
 
-/**
- * Resets internal state and timer
- */
 void PIR::reset() {
   this->_state.setState(false);
   this->_state.timerReset();
 }
 
-/**
- * Gets internal state
- */
 bool PIR::status() const {
   return this->_state.status();
 }

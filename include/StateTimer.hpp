@@ -18,8 +18,17 @@ class StateTimer {
     ~StateTimer();
     bool status() const;
     bool timeOut() const;
+    /**
+     * Sets internal timer delay for timeOut
+     */
     void setDelay(ulong const delay);
+    /**
+     * Sets internal timer to current time
+     */ 
     void timerUpdate();
+    /**
+     * Sets internal timer to 0
+     */
     void timerReset();
     void setState(bool const state);
     void switchState();
@@ -43,23 +52,14 @@ bool StateTimer::timeOut() const {
   return ((millis() - this->_start) > this->_delay);
 }
 
-/**
- * Sets internal timer delay for timeOut
- */
 void StateTimer::setDelay(ulong const delay) {
   this->_delay = delay;
 }
 
-/**
- * Sets internal timer to current time
- */ 
 void StateTimer::timerUpdate() {
   this->_start = millis();
 }
 
-/**
- * Sets internal timer to 0
- */
 void StateTimer::timerReset() {
   this->_start = 0;
 }
