@@ -12,7 +12,7 @@
 #include "WiFiHandler.hpp"
 
 BluetoothSerial SerialBT;
-WiFiHandler wifiHandler;
+WiFiHandler wifiConnection;
 
 BH1750 lightSensor;
 UltraSonicDistanceSensor distanceSensor(23, 22);
@@ -43,25 +43,33 @@ void setup () {
 }
 
 void manualLightControl() {
-  if (!manual.status())
-    led.fadeIn();
-  else
+  if(led.autoStatus() || manual.status()) {
     led.fadeOut();
-  manual.switchState();
+    manual.setState(false);
+    return;
+  }
+  led.fadeIn();
+  manual.setState(true);
 }
 
 void touch() {
+  static Smoothing<touch_value_t> touchData(0, 20, 5);
   static StateTimer touch(500);
-  static Smoothing<touch_value_t> touchData(0, 20, 10);
+  static bool prevState;
+
+  prevState = touch.status();
   touchData.addData(touchRead(13));
 
-  if (touchData.getIndex() < 9)
+  if (touchData.getIndex() < 4)
     return;
 
   if (touchData.isInRange() && touch.timeOut()) {
-    manualLightControl();
     touch.timerUpdate();
+    touch.setState(true);
+    manualLightControl();
+    return;
   }
+  touch.setState(false);
 }
 
 void sensors() {
@@ -110,8 +118,8 @@ void bluetoothHandler() {
 
   switch (message[0]) {
     case BT_MSG_LED:        manualLightControl(); break;
-    case BT_MSG_WIFI_SSID:  wifiHandler.setSSID(message.substr(1)); break;
-    case BT_MSG_WIFI_PASS:  wifiHandler.setPassword(message.substr(1)); break;
+    case BT_MSG_WIFI_SSID:  wifiConnection.setSSID(message.substr(1)); break;
+    case BT_MSG_WIFI_PASS:  wifiConnection.setPassword(message.substr(1)); break;
     default:                Serial.println("ERROR: Bluetooth: BAD DATA"); break;
   }
 
@@ -122,7 +130,7 @@ void loop () {
   touch();
   sensors();
   bluetoothHandler();
-  wifiHandler.run();
+  wifiConnection.run();
   led.run();
 
   delay(10);
