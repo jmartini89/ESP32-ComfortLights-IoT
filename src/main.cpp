@@ -1,10 +1,9 @@
-#include "Definitions.h"
-
 #include <Arduino.h>
 #include <BluetoothSerial.h>
-#include <string>
 #include <HCSR04.h>
 #include <BH1750.h>
+#include <string>
+#include "definitions.h"
 #include "Led.hpp"
 #include "HCSR501.hpp"
 #include "Smoothing.hpp"
@@ -64,7 +63,6 @@ void touch() {
   if (touchData.isInRange() && touch.timeOut()) {
     touch.timerUpdate();
     manualLightControl();
-    return;
   }
 }
 
@@ -85,12 +83,10 @@ void sensors() {
     led.fadeIn(true);
 
   if (SENSORS_DEBUG) {
-    float lux = lightData.getAverage();
-    float distance = distanceData.getAverage();
     Serial.print("SENSORS: ");
-    Serial.print(distance); Serial.print(" cm");
+    Serial.print(distanceData.getAverage()); Serial.print(" cm");
     Serial.print(" | ");
-    Serial.print(lux); Serial.print(" lx");
+    Serial.print(lightData.getAverage()); Serial.print(" lx");
     Serial.print(" | ");
     Serial.print("motion "); Serial.print(motionSensor.status());
     Serial.println();

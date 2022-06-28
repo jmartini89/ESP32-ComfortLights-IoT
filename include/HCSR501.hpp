@@ -9,57 +9,51 @@
 #define HCSR501_HPP
 
 #include <Arduino.h>
-#include "Definitions.h"
 #include "StateTimer.hpp"
+#include "definitions.h"
 
 class PIR {
-  private:
-    byte const  _pin;
-    StateTimer  _state;
-  public:
-    PIR(byte const pin);
-    ~PIR();
-    /**
-     * New sensor read if current state is LOW and TIMEOUT expired
-     * Updates internal state and timer
-     */
-    void update();
-    /**
-     * Resets internal state and timer
-     */
-    void reset();
-    /**
-     * Gets internal state
-     */
-    bool status() const;
-};
-
-PIR::PIR(byte const pin)
-  :_pin(pin)
-  ,_state(SENSOR_MOTION_TIMEOUT)
-{
-  pinMode(this->_pin, INPUT);
-}
-
-PIR::~PIR() {}
-
-void PIR::update() {
-  if (!this->_state.status()) {
-    this->_state.setState(digitalRead(this->_pin));
-    if (this->_state.status())
-      this->_state.timerUpdate();
+private:
+  byte const  _pin;
+  StateTimer  _state;
+public:
+  PIR(byte const pin)
+    :_pin(pin)
+    ,_state(SENSOR_MOTION_TIMEOUT)
+  {
+    pinMode(this->_pin, INPUT);
   }
-  if (this->_state.status() && this->_state.timeOut())
+
+  ~PIR() {}
+
+  /**
+   * New sensor read if current state is LOW and TIMEOUT expired
+   * Updates internal state and timer
+   */
+  void update() {
+    if (!this->_state.status()) {
+      this->_state.setState(digitalRead(this->_pin));
+      if (this->_state.status())
+        this->_state.timerUpdate();
+    }
+    if (this->_state.status() && this->_state.timeOut())
+      this->_state.setState(false);
+  }
+
+  /**
+   * Resets internal state and timer
+   */
+  void reset() {
     this->_state.setState(false);
-}
+    this->_state.timerReset();
+  }
 
-void PIR::reset() {
-  this->_state.setState(false);
-  this->_state.timerReset();
-}
-
-bool PIR::status() const {
-  return this->_state.status();
-}
+  /**
+   * Gets internal state
+   */
+  bool status() const{
+    return this->_state.status();
+  }
+};
 
 #endif
