@@ -10,7 +10,6 @@
 #include "Smoothing.hpp"
 #include "StateTimer.hpp"
 #include "WiFiHandler.hpp"
-#include "TouchTrigger.hpp"
 
 BluetoothSerial SerialBT;
 WiFiHandler wifiHandler;
