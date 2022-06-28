@@ -55,9 +55,7 @@ void manualLightControl() {
 void touch() {
   static Smoothing<touch_value_t> touchData(0, 20, 5);
   static StateTimer touch(500);
-  static bool prevState;
 
-  prevState = touch.status();
   touchData.addData(touchRead(13));
 
   if (touchData.getIndex() < 4)
