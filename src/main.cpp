@@ -63,11 +63,9 @@ void touch() {
 
   if (touchData.isInRange() && touch.timeOut()) {
     touch.timerUpdate();
-    touch.setState(true);
     manualLightControl();
     return;
   }
-  touch.setState(false);
 }
 
 void sensors() {
