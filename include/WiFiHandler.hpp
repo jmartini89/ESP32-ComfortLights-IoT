@@ -1,3 +1,12 @@
+/*
+ Custom handler for Wi-Fi connection:
+  triggered by user input (E.g. via Bluetooth)
+  automatic reconnection
+*/
+
+/* ------------------------------- DEPRECATED ------------------------------- */
+/* ------------------------ Use WiFiManager.h instead ----------------------- */
+
 #ifndef WIFI_HANDLER_HPP
 #define WIFI_HANDLER_HPP
 

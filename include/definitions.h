@@ -6,23 +6,20 @@
 #define BAUD_RATE 115200
 #endif
 
-//CONNECTIONS
-#define WIFI_SSID_LENGHT 32
-#define WIFI_PASS_LENGHT 63
-#define BT_MSG_LED 1
-#define BT_MSG_WIFI_SSID 2
-#define BT_MSG_WIFI_PASS 3
-
 //DEBUG
-#if DEBUG_SENSORS_PRINT
-#define SENSORS_DEBUG 1
-#else
-#define SENSORS_DEBUG 0
+#ifndef CONFIG_RESET
+#define CONFIG_RESET false
 #endif
-#if DEBUG_PIR_SKIP_INIT
-#define PIR_SKIP_INIT 1
+#ifndef DEBUG_SENSORS
+#define DEBUG_SENSORS false
+#endif
+#ifndef DEBUG_PIR_SKIP_INIT
+#define DEBUG_PIR_SKIP_INIT false
+#endif
+#if WM_DEBUG_LEVEL >= 3
+#define DEBUG_WIFI true
 #else
-#define PIR_SKIP_INIT 0
+#define DEBUG_WIFI false
 #endif
 
 //SENSORS
@@ -30,7 +27,7 @@
 #define SENSOR_LIGHT_TRIGGER 5
 #endif
 #ifndef SENSOR_DISTANCE_TRIGGER
-#define SENSOR_DISTANCE_TRIGGER 10
+#define SENSOR_DISTANCE_TRIGGER 170
 #endif
 #ifndef SENSOR_MOTION_TIMEOUT
 #define SENSOR_MOTION_TIMEOUT 30000
@@ -38,7 +35,7 @@
 
 //LED
 #ifndef MANUAL_TIMEOUT
-#define MANUAL_TIMEOUT 5000
+#define MANUAL_TIMEOUT 30000
 #endif
 #ifndef LED_AUTO_TIMEOUT
 #define LED_AUTO_TIMEOUT 60000

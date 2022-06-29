@@ -1,35 +1,40 @@
 #include <Arduino.h>
-#include <BluetoothSerial.h>
 #include <HCSR04.h>
 #include <BH1750.h>
-#include <string>
+#include <WiFiManager.h>
 #include "definitions.h"
 #include "Led.hpp"
 #include "HCSR501.hpp"
 #include "Smoothing.hpp"
 #include "StateTimer.hpp"
-#include "WiFiHandler.hpp"
 #include "utils.h"
 
-BluetoothSerial SerialBT;
-WiFiHandler wifiConnection;
+WiFiManager wm;
 
 BH1750 lightSensor;
 UltraSonicDistanceSensor distanceSensor(23, 22);
 PIR motionSensor(16);
-Led led(26);
 
-StateTimer manual(0);
+Led led(26);
 
 void setup () {
   Serial.begin(BAUD_RATE);
   initSensors(led, lightSensor);
-  SerialBT.begin("ESP32test");
+  WiFi.mode(WIFI_STA);
+  if (CONFIG_RESET)
+    wm.resetSettings();
+  wm.setConfigPortalBlocking(false);
+  if(wm.autoConnect("SmartLights", "esp32test"))
+    Serial.println("WiFi connected");
+  else
+    Serial.println("WiFi configportal running");
   Serial.println("ESP32 running");
 }
 
 void manualLightControl() {
-  if(led.autoStatus() || manual.status()) {
+  StateTimer manual(0);
+
+  if (led.autoStatus() || manual.status()) {
     led.fadeOut();
     manual.setState(false);
     return;
@@ -69,43 +74,16 @@ void sensors() {
       && distanceData.isInRange())
     led.fadeIn(true);
 
-  if (SENSORS_DEBUG)
+  if (DEBUG_SENSORS)
     debugSensors(lightData.getAverage(),
       distanceData.getAverage(),
       motionSensor.status());
 }
 
-void bluetoothHandler() {
-  if (!SerialBT.available())
-    return;
-
-  static std::string message;
-  byte byteRead = SerialBT.read();
-  if (byteRead != '\n') {
-    message += byteRead;
-    return;
-  }
-  if (message.length() < 2) {
-    message.clear();
-    return;
-  }
-
-  switch (message[0]) {
-    case BT_MSG_LED:        manualLightControl(); break;
-    case BT_MSG_WIFI_SSID:  wifiConnection.setSSID(message.substr(1)); break;
-    case BT_MSG_WIFI_PASS:  wifiConnection.setPassword(message.substr(1)); break;
-    default:                Serial.println("ERROR: Bluetooth: BAD DATA"); break;
-  }
-
-  message.clear();
-}
-
 void loop () {
+  wm.process();
   touch();
   sensors();
-  bluetoothHandler();
-  wifiConnection.run();
   led.run();
-
   delay(10);
 }

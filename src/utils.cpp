@@ -1,7 +1,7 @@
 #include "utils.h"
 
 void initSensors(Led const & led, BH1750 & lightSensor) {
-  if (!PIR_SKIP_INIT) {
+  if (!DEBUG_PIR_SKIP_INIT) {
     Serial.println("PIR Sensor init:");
     for (byte i = 0; i < 30; i++) {
       Serial.print("."); led.on(); delay(50); led.off(); delay(1000);
@@ -23,3 +23,26 @@ void debugSensors(float const lux, float const distance, bool const motion) {
   Serial.print("motion "); Serial.print(motion);
   Serial.println();
 }
+
+// void bluetoothHandler() {
+//   if (!SerialBT.available())
+//     return;
+
+//   static std::string message;
+//   byte byteRead = SerialBT.read();
+//   if (byteRead != '\n') {
+//     message += byteRead;
+//     return;
+//   }
+//   if (message.length() < 2) {
+//     message.clear();
+//     return;
+//   }
+
+//   switch (message[0]) {
+//     case BT_MSG_LED:  manualLightControl(); break;
+//     default:          Serial.println("ERROR: Bluetooth: BAD DATA"); break;
+//   }
+
+//   message.clear();
+// }
