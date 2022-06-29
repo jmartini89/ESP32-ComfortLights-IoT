@@ -30,7 +30,6 @@ public:
     return ((millis() - this->_start) > this->_delay);
   }
 
-
   /**
    * Sets internal timer delay for timeOut
    */

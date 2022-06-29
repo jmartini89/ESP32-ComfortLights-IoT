@@ -1,6 +1,6 @@
 #include "utils.h"
 
-void initSensors(Led const & led, BH1750 & lightSensor) {
+void initSensors(Led & led, BH1750 & lightSensor) {
   if (!DEBUG_PIR_SKIP_INIT) {
     Serial.println("PIR Sensor init:");
     for (byte i = 0; i < 30; i++) {

@@ -6,7 +6,7 @@
 #include "definitions.h"
 #include "Led.hpp"
 
-void initSensors(Led const & led, BH1750 & lightSensor);
+void initSensors(Led & led, BH1750 & lightSensor);
 void debugSensors(float const lux, float const distance, bool const motion);
 
 #endif

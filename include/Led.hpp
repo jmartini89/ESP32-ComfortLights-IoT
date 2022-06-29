@@ -22,8 +22,8 @@ class Led {
   public:
     Led(byte const pin);
     ~Led();
-    void on() const;
-    void off() const;
+    void on();
+    void off();
     /**
      * Non-blocking PWM fade with optional execution timer
      * @param automatic enables automatic toggle based on LED_AUTO_TIMEOUT timer delay
@@ -31,6 +31,8 @@ class Led {
      */
     void fadeIn(bool automatic = false, int const delay = LED_FADE_DELAY);
     void fadeOut(int const delay = LED_FADE_DELAY);
+    void fadeInBlocking();
+    void fadeOutBlocking();
     bool autoStatus() const;
     void run();
 };

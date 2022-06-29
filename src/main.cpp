@@ -10,19 +10,16 @@
 #include "utils.h"
 
 WiFiManager wm;
-
 BH1750 lightSensor;
 UltraSonicDistanceSensor distanceSensor(23, 22);
 PIR motionSensor(16);
-
 Led led(26);
+bool security = false;
 
 void setup () {
   Serial.begin(BAUD_RATE);
   initSensors(led, lightSensor);
   WiFi.mode(WIFI_STA);
-  if (CONFIG_RESET)
-    wm.resetSettings();
   wm.setConfigPortalBlocking(false);
   if(wm.autoConnect("SmartLights", "esp32test"))
     Serial.println("WiFi connected");
@@ -32,35 +29,58 @@ void setup () {
 }
 
 void manualLightControl() {
-  StateTimer manual(0);
+  static bool manual = false;
 
-  if (led.autoStatus() || manual.status()) {
+  if (led.autoStatus() || manual) {
     led.fadeOut();
-    manual.setState(false);
+    manual = false;
     return;
   }
   led.fadeIn();
-  manual.setState(true);
+  manual = true;
 }
 
 void touch() {
-  static Smoothing<touch_value_t> touchData(0, 20, 5);
-  static StateTimer touch(500);
+  static ulong timer;
+  static bool state, prevState;
 
-  touchData.addData(touchRead(13));
-
-  if (touchData.getIndex() < 4)
+  state = (touchRead(13) < 20);
+  if (state == prevState)
     return;
 
-  if (touchData.isInRange() && touch.timeOut()) {
-    touch.timerUpdate();
-    manualLightControl();
+  // led blink for security or reset
+  // if (state && (state == prevState))
+  //   ;
+
+  if (state)
+    timer = millis();
+  else {
+    ulong timeDiff = (millis() - timer);
+    if (timeDiff >= 100 && timeDiff < LED_TOGGLE)
+      manualLightControl();
+    else if (timeDiff >= LED_TOGGLE && timeDiff < SENSORS_SECURITY) {
+      security = !security;
+      led.on(); delay(100); led.fadeOutBlocking();
+    }
+    else if (timeDiff >= SENSORS_SECURITY) {
+      Serial.println("RESET");
+      wm.resetSettings();
+      for (byte i = 0; i <= 10; i++) {
+        led.on(); delay(100); led.off(); delay(100);
+      }
+      ESP.restart();
+    }
   }
+
+  prevState = state;
 }
 
 void sensors() {
   static Smoothing<float> lightData(0, SENSOR_LIGHT_TRIGGER, 10);
   static Smoothing<float> distanceData(0, SENSOR_DISTANCE_TRIGGER, 10);
+
+  if (security)
+    return;
 
   lightData.addData(lightSensor.readLightLevel());
   distanceData.addData(distanceSensor.measureDistanceCm());

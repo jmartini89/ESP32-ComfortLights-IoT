@@ -7,19 +7,11 @@
 #endif
 
 //DEBUG
-#ifndef CONFIG_RESET
-#define CONFIG_RESET false
-#endif
 #ifndef DEBUG_SENSORS
 #define DEBUG_SENSORS false
 #endif
 #ifndef DEBUG_PIR_SKIP_INIT
 #define DEBUG_PIR_SKIP_INIT false
-#endif
-#if WM_DEBUG_LEVEL >= 3
-#define DEBUG_WIFI true
-#else
-#define DEBUG_WIFI false
 #endif
 
 //SENSORS
@@ -32,10 +24,13 @@
 #ifndef SENSOR_MOTION_TIMEOUT
 #define SENSOR_MOTION_TIMEOUT 30000
 #endif
+#ifndef SENSORS_SECURITY
+#define SENSORS_SECURITY 5000
+#endif
 
 //LED
-#ifndef MANUAL_TIMEOUT
-#define MANUAL_TIMEOUT 30000
+#ifndef LED_TOGGLE
+#define LED_TOGGLE 1500
 #endif
 #ifndef LED_AUTO_TIMEOUT
 #define LED_AUTO_TIMEOUT 60000

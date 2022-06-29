@@ -41,12 +41,27 @@ void Led::_runFadeAsync() {
   analogWrite(this->_pin, this->_brightness);
 }
 
-void Led::on() const {
-  digitalWrite(this->_pin, HIGH);
+void Led::on() {
+  this->_brightness = 255;
+  analogWrite(this->_pin, this->_brightness);
 }
 
-void Led::off() const {
-  digitalWrite(this->_pin, LOW);
+void Led::off() {
+  this->_brightness = 0;
+  analogWrite(this->_pin, this->_brightness);
+}
+
+void Led::fadeInBlocking() {
+  for (; this->_brightness <= LED_MAX_BRIGHTNESS; this->_brightness += LED_FADE_AMOUNT) {
+    analogWrite(this->_pin, this->_brightness);
+    delay(LED_FADE_DELAY);
+  }
+}
+void Led::fadeOutBlocking() {
+  for (; this->_brightness >= LED_MIN_BRIGHTNESS; this->_brightness -= LED_FADE_AMOUNT) {
+    analogWrite(this->_pin, this->_brightness);
+    delay(LED_FADE_DELAY);
+  }
 }
 
 void Led::fadeIn(bool automatic, int const delay) {
@@ -73,17 +88,3 @@ void Led::run() {
   }
 }
 
-/* BLOCKING FADE IMPLEMENTATIONS
-void Led::fadeInBlocking() {
-  for (; this->_brightness <= LED_MAX_BRIGHTNESS; this->_brightness += LED_FADE_AMOUNT) {
-    analogWrite(this->_pin, this->_brightness);
-    delay(LED_FADE_DELAY);
-  }
-}
-void Led::fadeOutBlocking() {
-  for (; this->_brightness >= LED_MIN_BRIGHTNESS; this->_brightness -= LED_FADE_AMOUNT) {
-    analogWrite(this->_pin, this->_brightness);
-    delay(LED_FADE_DELAY);
-  }
-}
-*/
