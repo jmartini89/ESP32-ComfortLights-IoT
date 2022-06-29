@@ -9,6 +9,7 @@
 #include "Smoothing.hpp"
 #include "StateTimer.hpp"
 #include "WiFiHandler.hpp"
+#include "utils.h"
 
 BluetoothSerial SerialBT;
 WiFiHandler wifiConnection;
@@ -20,23 +21,9 @@ Led led(26);
 
 StateTimer manual(0);
 
-void initSensors() {
-  if (!PIR_SKIP_INIT) {
-    Serial.println("PIR Sensor init:");
-    for (byte i = 0; i < 30; i++) {
-      Serial.print("."); led.on(); delay(50); led.off(); delay(1000);
-    } Serial.println(" done!");
-  }
-  Serial.print("Light Sensor init:");
-  Wire.begin(32, 33);
-  while (!lightSensor.begin()) {
-    Serial.print("."); led.on(); delay(50); led.off(); delay(50);
-  } Serial.println(" done!");
-}
-
 void setup () {
   Serial.begin(BAUD_RATE);
-  initSensors();
+  initSensors(led, lightSensor);
   SerialBT.begin("ESP32test");
   Serial.println("ESP32 running");
 }
@@ -82,15 +69,10 @@ void sensors() {
       && distanceData.isInRange())
     led.fadeIn(true);
 
-  if (SENSORS_DEBUG) {
-    Serial.print("SENSORS: ");
-    Serial.print(distanceData.getAverage()); Serial.print(" cm");
-    Serial.print(" | ");
-    Serial.print(lightData.getAverage()); Serial.print(" lx");
-    Serial.print(" | ");
-    Serial.print("motion "); Serial.print(motionSensor.status());
-    Serial.println();
-  }
+  if (SENSORS_DEBUG)
+    debugSensors(lightData.getAverage(),
+      distanceData.getAverage(),
+      motionSensor.status());
 }
 
 void bluetoothHandler() {
