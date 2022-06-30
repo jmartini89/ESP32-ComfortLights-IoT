@@ -45,7 +45,7 @@ void touch() {
   static ulong timer;
   static bool state, prevState, settings;
 
-  state = (touchRead(13) < 20);
+  state = (touchRead(13) < 30);
   if (state != prevState) {
     if (state) {
       settings = true;
