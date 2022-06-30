@@ -4,13 +4,13 @@ void initSensors(Led & led, BH1750 & lightSensor) {
   if (!DEBUG_PIR_SKIP_INIT) {
     Serial.println("PIR Sensor init:");
     for (byte i = 0; i < 30; i++) {
-      Serial.print("."); led.on(); delay(50); led.off(); delay(1000);
+      Serial.print("."); led.blinkBlocking(50); delay(1000);
     } Serial.println(" done!");
   }
   Serial.print("Light Sensor init:");
   Wire.begin(32, 33);
   while (!lightSensor.begin()) {
-    Serial.print("."); led.on(); delay(50); led.off(); delay(50);
+    Serial.print("."); led.blinkBlocking(50);
   } Serial.println(" done!");
 }
 
@@ -22,6 +22,13 @@ void debugSensors(float const lux, float const distance, bool const motion) {
   Serial.print(" | ");
   Serial.print("motion "); Serial.print(motion);
   Serial.println();
+}
+
+void manualReset(Led & led, WiFiManager & wm) {
+  Serial.println("RESET");
+  led.toggleOn(); delay(2500);
+  wm.resetSettings();
+  ESP.restart();
 }
 
 // void bluetoothHandler() {

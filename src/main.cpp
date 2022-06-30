@@ -21,57 +21,52 @@ void setup () {
   initSensors(led, lightSensor);
   WiFi.mode(WIFI_STA);
   wm.setConfigPortalBlocking(false);
-  if(wm.autoConnect("SmartLights", "esp32test"))
+  wm.setConfigPortalTimeout(180);
+  if (wm.autoConnect("SmartLights", "esp32test"))
     Serial.println("WiFi connected");
   else
     Serial.println("WiFi configportal running");
   Serial.println("ESP32 running");
 }
 
-void manualLightControl() {
-  static bool manual = false;
-
-  if (led.autoStatus() || manual) {
-    led.fadeOut();
-    manual = false;
-    return;
-  }
-  led.fadeIn();
-  manual = true;
+byte touchSettingsTimer(ulong const timer) {
+  ulong timeDiff = (millis() - timer);
+  if (timeDiff < 100)
+    return 0;
+  else if (timeDiff < SENSORS_SECURITY)
+    return 1;
+  else if (timeDiff >= SENSORS_SECURITY && timeDiff < 10000)
+    return 2;
+  else
+    return 3;
 }
 
 void touch() {
   static ulong timer;
-  static bool state, prevState;
+  static bool state, prevState, settings;
 
   state = (touchRead(13) < 20);
-  if (state == prevState)
-    return;
-
-  // led blink for security or reset
-  // if (state && (state == prevState))
-  //   ;
-
-  if (state)
-    timer = millis();
-  else {
-    ulong timeDiff = (millis() - timer);
-    if (timeDiff >= 100 && timeDiff < LED_TOGGLE)
-      manualLightControl();
-    else if (timeDiff >= LED_TOGGLE && timeDiff < SENSORS_SECURITY) {
-      security = !security;
-      led.on(); delay(100); led.fadeOutBlocking();
+  if (state != prevState) {
+    if (state) {
+      settings = true;
+      timer = millis();
     }
-    else if (timeDiff >= SENSORS_SECURITY) {
-      Serial.println("RESET");
-      wm.resetSettings();
-      for (byte i = 0; i <= 10; i++) {
-        led.on(); delay(100); led.off(); delay(100);
+    else {
+      settings = false;
+      switch (touchSettingsTimer(timer)) {
+        case 1: led.fadeSwitch(); break;
+        case 2: security = !security; break;
+        default: break;
       }
-      ESP.restart();
     }
   }
-
+  if (settings && state && state == prevState) {
+    switch (touchSettingsTimer(timer)) {
+      case 2: led.blinkBlocking(100); break;
+      case 3: manualReset(led, wm); break;
+      default: break;
+    }
+  }
   prevState = state;
 }
 
