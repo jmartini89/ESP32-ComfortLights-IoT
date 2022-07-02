@@ -2,32 +2,28 @@
 #include <HCSR04.h>
 #include <BH1750.h>
 #include <WiFiManager.h>
+#include <MQTT.h>
+#include <Preferences.h>
 #include "definitions.h"
 #include "Led.hpp"
 #include "HCSR501.hpp"
 #include "Smoothing.hpp"
 #include "StateTimer.hpp"
 #include "utils.h"
+#include "wmParameters.h"
 
-WiFiManager wm;
 BH1750 lightSensor;
 UltraSonicDistanceSensor distanceSensor(23, 22);
 PIR motionSensor(16);
 Led led(26);
-bool security = false;
 
-void setup () {
-  Serial.begin(BAUD_RATE);
-  initSensors(led, lightSensor);
-  WiFi.mode(WIFI_STA);
-  wm.setConfigPortalBlocking(false);
-  wm.setConfigPortalTimeout(180);
-  if (wm.autoConnect("SmartLights", "esp32test"))
-    Serial.println("WiFi connected");
-  else
-    Serial.println("WiFi configportal running");
-  Serial.println("ESP32 running");
-}
+Preferences preferences;
+WiFiManager wm;
+WiFiClient net;
+MQTTClient mqtt;
+wmParameters wmParams;
+
+bool sensorsSecurity = false;
 
 byte touchSettingsTimer(ulong const timer) {
   ulong timeDiff = (millis() - timer);
@@ -55,7 +51,7 @@ void touch() {
       settings = false;
       switch (touchSettingsTimer(timer)) {
         case 1: led.fadeSwitch(); break;
-        case 2: security = !security; break;
+        case 2: sensorsSecurity = !sensorsSecurity; break;
         default: break;
       }
     }
@@ -63,7 +59,7 @@ void touch() {
   if (settings && state && state == prevState) {
     switch (touchSettingsTimer(timer)) {
       case 2: led.blinkBlocking(100); break;
-      case 3: manualReset(led, wm); break;
+      case 3: manualReset(led, wm, preferences); break;
       default: break;
     }
   }
@@ -74,7 +70,11 @@ void sensors() {
   static Smoothing<float> lightData(0, SENSOR_LIGHT_TRIGGER, 10);
   static Smoothing<float> distanceData(0, SENSOR_DISTANCE_TRIGGER, 10);
 
-  if (security)
+  if (sensorsSecurity)
+    return;
+
+  motionSensor.update();
+  if (!motionSensor.status())
     return;
 
   lightData.addData(lightSensor.readLightLevel());
@@ -83,10 +83,7 @@ void sensors() {
   if (lightData.getIndex() < 9)
     return;
 
-  motionSensor.update();
-  if (lightData.isInRange()
-      && motionSensor.status()
-      && distanceData.isInRange())
+  if (lightData.isInRange() && distanceData.isInRange())
     led.fadeIn(true);
 
   if (DEBUG_SENSORS)
@@ -95,10 +92,33 @@ void sensors() {
       motionSensor.status());
 }
 
+void messageReceived(String &topic, String &payload) {
+  Serial.println("incoming: " + topic + " - " + payload);
+}
+
+void wmSaveParamsCallback() {
+  preferences.putString("address", wmParams.address.getValue());
+  preferences.putString("id", wmParams.id.getValue());
+  preferences.putString("user", wmParams.user.getValue());
+  preferences.putString("pass", wmParams.pass.getValue());
+}
+
+void setup () {
+  preferences.begin("mqtt");
+  Serial.begin(BAUD_RATE);
+  initSensors(led, lightSensor);
+  initwm(wm, wmParams, wmSaveParamsCallback);
+  mqtt.begin(net);
+  mqtt.onMessage(messageReceived);
+  Serial.println("ESP32 running");
+}
+
 void loop () {
-  wm.process();
   touch();
   sensors();
+  wm.process();
+  mqttConnect(mqtt, preferences);
+  mqtt.loop();
   led.run();
   delay(10);
 }

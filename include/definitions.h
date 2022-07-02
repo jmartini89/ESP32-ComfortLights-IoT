@@ -6,6 +6,9 @@
 #define BAUD_RATE 115200
 #endif
 
+#define WM_CONF_NAME "SmartLights"
+#define WM_CONF_PASS "esp32test"
+
 //DEBUG
 #ifndef DEBUG_SENSORS
 #define DEBUG_SENSORS false
