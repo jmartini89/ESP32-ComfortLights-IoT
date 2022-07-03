@@ -20,6 +20,7 @@ void initwm(WiFiManager & wm, wmParameters & wmParams, void (*f)(void)) {
   wm.addParameter(&wmParams.id);
   wm.addParameter(&wmParams.user);
   wm.addParameter(&wmParams.pass);
+  wm.addParameter(&wmParams.topic);
   wm.setSaveParamsCallback(f);
   wm.setConfigPortalBlocking(false);
   wm.setConfigPortalTimeout(180);
@@ -56,7 +57,7 @@ void mqttConnect(MQTTClient & mqtt, Preferences & preferences) {
     return;
 
   Serial.println("MQTT connected!");
-  mqtt.subscribe("/hello");
+  mqtt.subscribe(preferences.getString("topic", ""));
 }
 
 void debugSensors(float const lux, float const distance, bool const motion) {

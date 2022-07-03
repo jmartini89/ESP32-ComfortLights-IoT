@@ -101,6 +101,7 @@ void wmSaveParamsCallback() {
   preferences.putString("id", wmParams.id.getValue());
   preferences.putString("user", wmParams.user.getValue());
   preferences.putString("pass", wmParams.pass.getValue());
+  preferences.putString("topic", wmParams.topic.getValue());
 }
 
 void setup () {

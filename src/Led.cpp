@@ -112,4 +112,3 @@ void Led::run() {
     this->_STAutomatic.setState(false);
   }
 }
-
