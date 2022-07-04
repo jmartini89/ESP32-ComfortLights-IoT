@@ -36,7 +36,7 @@ void manualReset(Led & led, WiFiManager & wm, Preferences & preferences) {
   ESP.restart();
 }
 
-void mqttConnect(MQTTClient & mqtt, Preferences & preferences) {
+void mqttConnect(MQTTClient & mqtt, Preferences & preferences, std::string & mqttTopicIdStatus) {
   static ulong lastMillis = 0;
   static bool init = false;
 
@@ -44,6 +44,9 @@ void mqttConnect(MQTTClient & mqtt, Preferences & preferences) {
     || !preferences.isKey("address") || preferences.getString("address", "").isEmpty())
     return;
   lastMillis = millis();
+
+  if (!WiFi.isConnected())
+    return;
 
   if (!init) {
     mqtt.setHost(preferences.getString("address", "").c_str());
@@ -57,7 +60,19 @@ void mqttConnect(MQTTClient & mqtt, Preferences & preferences) {
     return;
 
   Serial.println("MQTT connected!");
-  mqtt.subscribe(preferences.getString("topic", ""));
+
+  std::string topicId;
+  topicId = preferences.getString("topic", "").c_str();
+  topicId += "/";
+  topicId += preferences.getString("id", "").c_str();
+  mqttTopicIdStatus = topicId + "/status";
+
+  Serial.printf("Topic:%s\n", preferences.getString("topic", "").c_str());
+  Serial.printf("TopicId:%s\n", topicId.c_str());
+  Serial.printf("TopicIdStatus:%s\n", mqttTopicIdStatus.c_str());
+
+  mqtt.subscribe(preferences.getString("topic", "").c_str());
+  mqtt.subscribe(topicId.c_str());
 }
 
 void debugSensors(float const lux, float const distance, bool const motion) {

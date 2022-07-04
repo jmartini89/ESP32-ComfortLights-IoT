@@ -26,6 +26,7 @@ class Led {
 
     void toggleOn();
     void toggleOff();
+    void setBrightness(int const brightness);
     void blinkBlocking(int const time);
 
     /**
@@ -42,6 +43,7 @@ class Led {
     void setAutoDelay(int const delay);
 
     bool getAutoStatus() const;
+    bool status() const;
 
     void run();
 };

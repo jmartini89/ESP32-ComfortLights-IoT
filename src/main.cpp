@@ -22,8 +22,11 @@ WiFiManager wm;
 WiFiClient net;
 MQTTClient mqtt;
 wmParameters wmParams;
+std::string mqttTopicIdStatus;
 
 bool sensorsSecurity = false;
+
+/* --------------------------------- SENSORS -------------------------------- */
 
 byte touchSettingsTimer(ulong const timer) {
   ulong timeDiff = (millis() - timer);
@@ -92,9 +95,35 @@ void sensors() {
       motionSensor.status());
 }
 
-void messageReceived(String &topic, String &payload) {
-  Serial.println("incoming: " + topic + " - " + payload);
+/* ---------------------------------- MQTT ---------------------------------- */
+
+void mqttMessageReceived(String &topic, String &payload) {
+  Serial.println("MQTT incoming: " + topic + " - " + payload);
+  if (payload.isEmpty())
+    return;
+  if (payload == "ON")
+    led.fadeIn();
+  else if (payload == "OFF")
+    led.fadeOut();
+  else if (payload == "SENSORS:ON")
+    sensorsSecurity = false;
+  else if (payload == "SENSORS:OFF")
+    sensorsSecurity = true;
 }
+
+
+void mqttUpdateStatus() {
+  static ulong timer;
+  if ((millis() - timer) > 1000) {
+    timer = millis();
+    std::string status = "ON";
+    if (!led.status())
+      status = "OFF";
+    mqtt.publish(mqttTopicIdStatus.c_str(), status.c_str());
+  }
+}
+
+/* ---------------------------------- SETUP --------------------------------- */
 
 void wmSaveParamsCallback() {
   preferences.putString("address", wmParams.address.getValue());
@@ -104,22 +133,25 @@ void wmSaveParamsCallback() {
   preferences.putString("topic", wmParams.topic.getValue());
 }
 
-void setup () {
+void setup() {
   preferences.begin("mqtt");
   Serial.begin(BAUD_RATE);
   initSensors(led, lightSensor);
   initwm(wm, wmParams, wmSaveParamsCallback);
   mqtt.begin(net);
-  mqtt.onMessage(messageReceived);
+  mqtt.onMessage(mqttMessageReceived);
   Serial.println("ESP32 running");
 }
+
+/* ---------------------------------- LOOP ---------------------------------- */
 
 void loop () {
   touch();
   sensors();
   wm.process();
-  mqttConnect(mqtt, preferences);
+  mqttConnect(mqtt, preferences, mqttTopicIdStatus);
   mqtt.loop();
+  mqttUpdateStatus();
   led.run();
   delay(10);
 }

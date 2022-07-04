@@ -26,11 +26,11 @@ void Led::_runFadeAsync() {
     return;
 
   if (this->_fadeDirection) {
-    if (this->_brightness <= LED_MAX_BRIGHTNESS)
+    if (this->_brightness < LED_MAX_BRIGHTNESS)
       this->_brightness += LED_FADE_AMOUNT;
   }
   else {
-    if (this->_brightness >= LED_MIN_BRIGHTNESS)
+    if (this->_brightness > LED_MIN_BRIGHTNESS)
       this->_brightness -= LED_FADE_AMOUNT;
   }
 
@@ -49,6 +49,11 @@ void Led::toggleOn() {
 
 void Led::toggleOff() {
   this->_brightness = 0;
+  analogWrite(this->_pin, this->_brightness);
+}
+
+void Led::setBrightness(int const brightness) {
+  this->_brightness = brightness;
   analogWrite(this->_pin, this->_brightness);
 }
 
@@ -74,14 +79,14 @@ void Led::fadeOut(int const stepDelay) {
 }
 
 void Led::fadeInBlocking() {
-  for (; this->_brightness <= LED_MAX_BRIGHTNESS; this->_brightness += LED_FADE_AMOUNT) {
+  for (; this->_brightness < LED_MAX_BRIGHTNESS; this->_brightness += LED_FADE_AMOUNT) {
     analogWrite(this->_pin, this->_brightness);
     delay(LED_FADE_DELAY);
   }
 }
 
 void Led::fadeOutBlocking() {
-  for (; this->_brightness >= LED_MIN_BRIGHTNESS; this->_brightness -= LED_FADE_AMOUNT) {
+  for (; this->_brightness > LED_MIN_BRIGHTNESS; this->_brightness -= LED_FADE_AMOUNT) {
     analogWrite(this->_pin, this->_brightness);
     delay(LED_FADE_DELAY);
   }
@@ -103,6 +108,12 @@ void Led::setAutoDelay(int const delay) {
 
 bool Led::getAutoStatus() const {
   return this->_STAutomatic.status();
+}
+
+bool Led::status() const {
+  if (this->_brightness > 0)
+    return true;
+  return false;
 }
 
 void Led::run() {
