@@ -29,7 +29,7 @@ void initwm(WiFiManager & wm, wmParameters & wmParams, void (*f)(void)) {
 
 void manualReset(Led & led, WiFiManager & wm, Preferences & preferences) {
   Serial.println("RESET");
-  led.toggleOn(); delay(2500);
+  led.instantOn(); delay(2500);
   preferences.clear();
   preferences.end();
   wm.resetSettings();
@@ -38,7 +38,6 @@ void manualReset(Led & led, WiFiManager & wm, Preferences & preferences) {
 
 void mqttConnect(MQTTClient & mqtt, Preferences & preferences, std::string & mqttTopicIdStatus) {
   static ulong lastMillis = 0;
-  static bool init = false;
 
   if (mqtt.connected() || ((millis() - lastMillis) < 5000)
     || !preferences.isKey("address") || preferences.getString("address", "").isEmpty())
@@ -48,10 +47,8 @@ void mqttConnect(MQTTClient & mqtt, Preferences & preferences, std::string & mqt
   if (!WiFi.isConnected())
     return;
 
-  if (!init) {
-    mqtt.setHost(preferences.getString("address", "").c_str());
-    init = true;
-  }
+  mqtt.setHost(preferences.getString("address", "").c_str());
+
   Serial.println("MQTT connecting...");
   if (!mqtt.connect(
     preferences.getString("id", "").c_str(),
@@ -76,6 +73,8 @@ void mqttConnect(MQTTClient & mqtt, Preferences & preferences, std::string & mqt
 }
 
 void debugSensors(float const lux, float const distance, bool const motion) {
+  if (!DEBUG_SENSORS)
+    return;
   Serial.print("SENSORS: ");
   Serial.print(lux); Serial.print(" lx");
   Serial.print(" | ");

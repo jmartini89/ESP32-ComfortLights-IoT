@@ -69,7 +69,7 @@ void touch() {
   prevState = state;
 }
 
-void sensors() {
+void sensorsRun() {
   static Smoothing<float> lightData(0, SENSOR_LIGHT_TRIGGER, 10);
   static Smoothing<float> distanceData(0, SENSOR_DISTANCE_TRIGGER, 10);
 
@@ -86,41 +86,61 @@ void sensors() {
   if (lightData.getIndex() < 9)
     return;
 
-  if (lightData.isInRange() && distanceData.isInRange())
-    led.fadeIn(true);
-
-  if (DEBUG_SENSORS)
-    debugSensors(lightData.getAverage(),
+  debugSensors(lightData.getAverage(),
       distanceData.getAverage(),
       motionSensor.status());
+
+  if (!(lightData.isInRange() && distanceData.isInRange()))
+    return;
+
+  led.setBrightnessTarget(LED_MAX_BRIGHTNESS);
+  led.fadeQueue(true);
 }
 
 /* ---------------------------------- MQTT ---------------------------------- */
 
-void mqttMessageReceived(String &topic, String &payload) {
+void mqttMessageReceived(String & topic, String & payload) {
   Serial.println("MQTT incoming: " + topic + " - " + payload);
+
   if (payload.isEmpty())
     return;
-  if (payload == "ON")
-    led.fadeIn();
-  else if (payload == "OFF")
-    led.fadeOut();
+
+  if (std::isdigit(payload[0]))
+    led.setBrightnessTarget(payload.toInt());
+
+  else if (payload == "ON") {
+    if (!led.getBrightnessTarget())
+      led.setBrightnessTarget(LED_MAX_BRIGHTNESS);
+    led.fadeQueue();
+  }
+  else if (payload == "OFF") {
+    led.setBrightnessTarget(0);
+    led.fadeQueue();
+  }
+
   else if (payload == "SENSORS:ON")
     sensorsSecurity = false;
   else if (payload == "SENSORS:OFF")
     sensorsSecurity = true;
 }
 
-
 void mqttUpdateStatus() {
   static ulong timer;
-  if ((millis() - timer) > 1000) {
-    timer = millis();
-    std::string status = "ON";
-    if (!led.status())
-      status = "OFF";
-    mqtt.publish(mqttTopicIdStatus.c_str(), status.c_str());
+  static unsigned int state, prevState;
+
+  if ((millis() - timer) < 1000)
+    return;
+  timer = millis();
+
+  state = led.getBrightnessTarget();
+  if (state != prevState) {
+    mqtt.publish(mqttTopicIdStatus.c_str(), std::to_string(state).c_str());
+    if (state)
+      mqtt.publish(mqttTopicIdStatus.c_str(), "ON");
+    else
+      mqtt.publish(mqttTopicIdStatus.c_str(), "OFF");
   }
+  prevState = state;
 }
 
 /* ---------------------------------- SETUP --------------------------------- */
@@ -147,7 +167,7 @@ void setup() {
 
 void loop () {
   touch();
-  sensors();
+  sensorsRun();
   wm.process();
   mqttConnect(mqtt, preferences, mqttTopicIdStatus);
   mqtt.loop();

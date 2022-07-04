@@ -1,8 +1,3 @@
-/*
- StateTimer library:
-  keeps track of state (boolean) with an handy timer for async-like operations
-*/
-
 #ifndef STATE_TIMER_HPP
 #define STATE_TIMER_HPP
 

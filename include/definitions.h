@@ -32,20 +32,17 @@
 #endif
 
 //LED
-#ifndef LED_TOGGLE
-#define LED_TOGGLE 1500
-#endif
 #ifndef LED_AUTO_TIMEOUT
 #define LED_AUTO_TIMEOUT 60000
 #endif
 #ifndef LED_FADE_DELAY
-#define LED_FADE_DELAY 20
+#define LED_FADE_DELAY 10
 #endif
 #ifndef LED_FADE_AMOUNT
 #define LED_FADE_AMOUNT 5
 #endif
 #ifndef LED_MAX_BRIGHTNESS
-#define LED_MAX_BRIGHTNESS 125
+#define LED_MAX_BRIGHTNESS 255
 #endif
 #ifndef LED_MIN_BRIGHTNESS
 #define LED_MIN_BRIGHTNESS 0

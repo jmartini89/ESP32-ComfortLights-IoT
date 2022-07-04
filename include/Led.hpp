@@ -1,8 +1,3 @@
-/*
- Generic PWM LED library with async-like (non-blocking) timer implementation for seamless fading
- Optional automatic mode for timer-driven toggle
-*/
-
 #ifndef LED_HPP
 #define LED_HPP
 
@@ -12,38 +7,24 @@
 
 class Led {
   private:
-    byte const  _pin;
-    int         _brightness;
-    StateTimer  _STAutomatic;
-    StateTimer  _STAsync;
-    bool        _fadeDirection;
-    bool        _manual;
-    void        _setFadeAsync(bool const fadeDirection, byte const delay);
-    void        _runFadeAsync();
+    byte const _pin;
+    bool _manual;
+    int _brightCurr;
+    uint _brightTarget;
+    StateTimer _STAsync;
+    StateTimer _STAutomatic;
   public:
     Led(byte const pin);
     ~Led();
 
-    void toggleOn();
-    void toggleOff();
-    void setBrightness(int const brightness);
-    void blinkBlocking(int const time);
+    uint getBrightnessTarget() const;
+    void setBrightnessTarget(uint brightness);
 
-    /**
-     * Non-blocking PWM fade with optional execution timer
-     * @param automatic enables automatic toggle based on LED_AUTO_TIMEOUT timer delay
-     * @param stepDelay timer for each BRIGHTNESS step
-     */
-    void fadeIn(bool const automatic = false, int const delay = LED_AUTO_TIMEOUT, int const stepDelay = LED_FADE_DELAY);
-    void fadeOut(int const stepDelay = LED_FADE_DELAY);
-    void fadeInBlocking();
-    void fadeOutBlocking();
+    void instantOn();
+    void instantOff();
+    void blinkBlocking(uint const time);
     void fadeSwitch();
-
-    void setAutoDelay(int const delay);
-
-    bool getAutoStatus() const;
-    bool status() const;
+    void fadeQueue(bool const automatic = false);
 
     void run();
 };
