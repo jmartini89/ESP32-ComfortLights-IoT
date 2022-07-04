@@ -20,7 +20,7 @@ uint Led::getBrightnessTarget() const {
 void Led::setBrightnessTarget(uint brightness) {
   if (brightness > LED_MAX_BRIGHTNESS)
     brightness = LED_MAX_BRIGHTNESS / LED_FADE_AMOUNT * LED_FADE_AMOUNT;
-  if (brightness < LED_FADE_AMOUNT)
+  if (brightness < LED_FADE_AMOUNT && brightness)
     brightness = LED_FADE_AMOUNT;
   this->_brightTarget = brightness / LED_FADE_AMOUNT * LED_FADE_AMOUNT;
 }
