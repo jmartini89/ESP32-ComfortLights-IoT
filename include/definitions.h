@@ -15,8 +15,10 @@
 #define HCSR04_TRIGGER 32
 #define HCSR04_ECHO 33
 #define PIR_PIN 27
-#define TOUCH_PIN 15
+#define BUTTON_PIN 0
 #define LED_PIN 23
+#define ROT_PIN_A 15
+#define ROT_PIN_B 5
 
 //DEBUG
 #ifndef DEBUG_SENSORS

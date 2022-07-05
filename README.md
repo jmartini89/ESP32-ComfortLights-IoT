@@ -15,7 +15,7 @@ On the first run the device sets itself as a Wi-Fi access point, providing an us
 
 No further setups are needed, settings are saved persistently on the device
 #
-The device has a single touch-sensitive button to control it:
+The device has a single button to control it:
 - short press `<1s no feedback`
 	- toggle the lights
 - long press `>5s blinking led feedback`
@@ -23,7 +23,7 @@ The device has a single touch-sensitive button to control it:
 - very long press `>10s stationary led feedback`
 	- factory reset
 
-Further iterations will implement a clickable potentiometer for manual brightness control
+Further iterations will implement a rotary encoder for manual brightness control
 #
 As a MQTT client the device is fully IoT capable and easily implementable in common home-automation systems and services. Given the MQTT broker settings and the device `main_topic` (E.g. room of operation), the device will automatically set its own topics as follows:
 

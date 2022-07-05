@@ -3,6 +3,7 @@
 #include <BH1750.h>
 #include <WiFiManager.h>
 #include <MQTT.h>
+#include <RotaryEncoder.h>
 #include <Preferences.h>
 #include "definitions.h"
 #include "Led.hpp"
@@ -16,6 +17,7 @@ BH1750 lightSensor;
 UltraSonicDistanceSensor distanceSensor(HCSR04_TRIGGER, HCSR04_ECHO);
 PIR motionSensor(PIR_PIN);
 Led led(LED_PIN);
+RotaryEncoder encoder(ROT_PIN_A, ROT_PIN_B);
 
 Preferences preferences;
 WiFiManager wm;
@@ -26,9 +28,9 @@ std::string mqttTopicIdStatus;
 
 bool sensorsSecurity = false;
 
-/* --------------------------------- SENSORS -------------------------------- */
+/* --------------------------------- BUTTONS -------------------------------- */
 
-byte touchSettingsTimer(ulong const timer) {
+byte buttonSettingsTimer(ulong const timer) {
   ulong timeDiff = (millis() - timer);
   if (timeDiff < 100)
     return 0;
@@ -40,11 +42,11 @@ byte touchSettingsTimer(ulong const timer) {
     return 3;
 }
 
-void touch() {
+void button() {
   static ulong timer;
   static bool state, prevState, settings;
 
-  state = (touchRead(TOUCH_PIN) < 30);
+  state = !digitalRead(BUTTON_PIN);
   if (state != prevState) {
     if (state) {
       settings = true;
@@ -52,7 +54,7 @@ void touch() {
     }
     else {
       settings = false;
-      switch (touchSettingsTimer(timer)) {
+      switch (buttonSettingsTimer(timer)) {
         case 1: led.fadeSwitch(); break;
         case 2: sensorsSecurity = !sensorsSecurity; break;
         default: break;
@@ -60,7 +62,7 @@ void touch() {
     }
   }
   if (settings && state && state == prevState) {
-    switch (touchSettingsTimer(timer)) {
+    switch (buttonSettingsTimer(timer)) {
       case 2: led.blinkBlocking(100); break;
       case 3: manualReset(led, wm, preferences); break;
       default: break;
@@ -68,6 +70,21 @@ void touch() {
   }
   prevState = state;
 }
+
+void rotary() {
+  static int pos = 0;
+  encoder.tick();
+  int newPos = encoder.getPosition();
+  if (pos != newPos) {
+    Serial.print("pos:");
+    Serial.print(newPos);
+    Serial.print(" dir:");
+    Serial.println((int)(encoder.getDirection()));
+    pos = newPos;
+  }
+}
+
+/* --------------------------------- SENSORS -------------------------------- */
 
 void sensorsRun() {
   static Smoothing<float> lightData(0, SENSOR_LIGHT_TRIGGER, 10);
@@ -152,6 +169,7 @@ void wmSaveParamsCallback() {
 void setup() {
   preferences.begin("mqtt");
   Serial.begin(BAUD_RATE);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   initSensors(led, lightSensor);
   initwm(wm, wmParams, wmSaveParamsCallback);
   mqtt.begin(net);
@@ -162,7 +180,8 @@ void setup() {
 /* ---------------------------------- LOOP ---------------------------------- */
 
 void loop () {
-  touch();
+  button();
+  // rotary();
   sensorsRun();
   wm.process();
   mqttConnect(mqtt, preferences, mqttTopicIdStatus);
