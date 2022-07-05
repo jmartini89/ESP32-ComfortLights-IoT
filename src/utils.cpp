@@ -8,7 +8,7 @@ void initSensors(Led & led, BH1750 & lightSensor) {
     } Serial.println(" done!");
   }
   Serial.print("Light Sensor init:");
-  Wire.begin(32, 33);
+  Wire.begin(BH1750_SDA, BH1750_SCL);
   while (!lightSensor.begin()) {
     Serial.print("."); led.blinkBlocking(50);
   } Serial.println(" done!");
@@ -72,9 +72,11 @@ void mqttConnect(MQTTClient & mqtt, Preferences & preferences, std::string & mqt
   mqtt.subscribe(topicId.c_str());
 }
 
-void debugSensors(float const lux, float const distance, bool const motion) {
+void debugSensors(Smoothing<float> const lightData, Smoothing<float> const distanceData, bool const motion) {
   if (!DEBUG_SENSORS)
     return;
+  float lux = lightData.getAverage();
+  float distance = distanceData.getAverage();
   Serial.print("SENSORS: ");
   Serial.print(lux); Serial.print(" lx");
   Serial.print(" | ");

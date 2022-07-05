@@ -20,8 +20,26 @@ public:
     bzero(this->_readings, sizeof(*this->_readings) * indexCount);
   }
 
+  Smoothing(Smoothing const & src) {
+    *this = src;
+  }
+
   ~Smoothing() {
     delete [] this->_readings;
+  }
+
+  Smoothing<Data> & operator=(Smoothing<Data> const & rhs) {
+    if (this != &rhs) {
+      this->_index = rhs._index;
+      this->_indexSize = rhs._indexSize;
+      this->_limits[0] = rhs._limits[0];
+      this->_limits[1] = rhs._limits[1];
+      this->_readings = new Data[this->_indexSize];
+      for (byte i = 0; i < this->_indexSize; i++) {
+        this->_readings[i] = rhs._readings[i];
+      }
+    }
+    return *this;
   }
 
   void addData(Data const data) {

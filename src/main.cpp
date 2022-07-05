@@ -13,9 +13,9 @@
 #include "wmParameters.h"
 
 BH1750 lightSensor;
-UltraSonicDistanceSensor distanceSensor(23, 22);
-PIR motionSensor(16);
-Led led(26);
+UltraSonicDistanceSensor distanceSensor(HCSR04_TRIGGER, HCSR04_ECHO);
+PIR motionSensor(PIR_PIN);
+Led led(LED_PIN);
 
 Preferences preferences;
 WiFiManager wm;
@@ -44,7 +44,7 @@ void touch() {
   static ulong timer;
   static bool state, prevState, settings;
 
-  state = (touchRead(13) < 30);
+  state = (touchRead(TOUCH_PIN) < 30);
   if (state != prevState) {
     if (state) {
       settings = true;
@@ -86,9 +86,7 @@ void sensorsRun() {
   if (lightData.getIndex() < 9)
     return;
 
-  debugSensors(lightData.getAverage(),
-      distanceData.getAverage(),
-      motionSensor.status());
+  debugSensors(lightData, distanceData, motionSensor.status());
 
   if (!(lightData.isInRange() && distanceData.isInRange()))
     return;

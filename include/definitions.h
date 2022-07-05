@@ -9,6 +9,15 @@
 #define WM_CONF_NAME "SmartLights"
 #define WM_CONF_PASS "esp32test"
 
+//GPIO
+#define BH1750_SCL 16
+#define BH1750_SDA 17
+#define HCSR04_TRIGGER 32
+#define HCSR04_ECHO 33
+#define PIR_PIN 27
+#define TOUCH_PIN 15
+#define LED_PIN 23
+
 //DEBUG
 #ifndef DEBUG_SENSORS
 #define DEBUG_SENSORS false
