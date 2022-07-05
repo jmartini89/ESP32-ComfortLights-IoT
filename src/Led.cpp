@@ -79,10 +79,11 @@ void Led::run() {
   else if (this->_brightCurr > this->_brightTarget)
     this->_brightCurr -= LED_FADE_AMOUNT;
 
-  if (this->_brightCurr == this->_brightTarget) {
+  if (this->_brightCurr == this->_brightTarget)
     this->_STAsync.setState(false);
+
+  if (this->_brightCurr == 0)
     this->_manual = false;
-  }
 
   this->_STAsync.timerUpdate();
   analogWrite(this->_pin, this->_brightCurr);
