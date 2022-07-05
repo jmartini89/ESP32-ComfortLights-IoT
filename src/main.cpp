@@ -107,7 +107,6 @@ void mqttMessageReceived(String & topic, String & payload) {
 
   if (std::isdigit(payload[0]))
     led.setBrightnessTarget(payload.toInt());
-
   else if (payload == "ON") {
     if (!led.getBrightnessTarget())
       led.setBrightnessTarget(LED_MAX_BRIGHTNESS);
@@ -117,7 +116,6 @@ void mqttMessageReceived(String & topic, String & payload) {
     led.setBrightnessTarget(0);
     led.fadeQueue();
   }
-
   else if (payload == "SENSORS:ON")
     sensorsSecurity = false;
   else if (payload == "SENSORS:OFF")
