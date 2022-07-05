@@ -36,7 +36,7 @@
 #define LED_AUTO_TIMEOUT 60000
 #endif
 #ifndef LED_FADE_DELAY
-#define LED_FADE_DELAY 10
+#define LED_FADE_DELAY 20
 #endif
 #ifndef LED_FADE_AMOUNT
 #define LED_FADE_AMOUNT 5
